@@ -35,11 +35,11 @@
         NSArray* arguments = command.arguments;
         NSString* orientationIn = [arguments objectAtIndex:1];
 
-        if ([orientationIn isEqual: @"unlocked"]) {
-            [(CDVViewController*)self.viewController updateSupportedOrientations:self.originalSupportedOrientations];
-            self.originalSupportedOrientations = nil;
-            return;
-        }
+        // if ([orientationIn isEqual: @"unlocked"]) {
+        //     [(CDVViewController*)self.viewController updateSupportedOrientations:self.originalSupportedOrientations];
+        //     self.originalSupportedOrientations = nil;
+        //     return;
+        // }
         
         // grab the device orientation so we can pass it back to the js side.
         NSString *orientation;
@@ -61,6 +61,10 @@
                 break;
         }
 
+        if ([orientationIn isEqual: @"unlocked"]) {
+            orientationIn = orientation;
+        }
+
         // we send the result prior to the view controller presentation so that the JS side
         // is ready for the unlock call.
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
@@ -69,7 +73,7 @@
 
         // SEE https://github.com/Adlotto/cordova-plugin-recheck-screen-orientation
         // HACK: Force rotate by changing the view hierarchy.
-		ForcedViewController *vc = [[ForcedViewController alloc] init];
+        ForcedViewController *vc = [[ForcedViewController alloc] init];
         vc.calledWith = orientationIn;
 
         // backgound should be transparent as it is briefly visible
@@ -95,17 +99,17 @@
 @implementation ForcedViewController
 
 -(void) viewDidAppear:(BOOL)animated {
-	CDVViewController *presenter = (CDVViewController*)self.presentingViewController;
-	
-	if ([self.calledWith rangeOfString:@"portrait"].location != NSNotFound) {
-		[presenter updateSupportedOrientations:@[[NSNumber numberWithInt:UIInterfaceOrientationPortrait]]];
+    CDVViewController *presenter = (CDVViewController*)self.presentingViewController;
+    
+    if ([self.calledWith rangeOfString:@"portrait"].location != NSNotFound) {
+        [presenter updateSupportedOrientations:@[[NSNumber numberWithInt:UIInterfaceOrientationPortrait]]];
 
-	} else if([self.calledWith rangeOfString:@"landscape"].location != NSNotFound) {
-		[presenter updateSupportedOrientations:@[[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight]]];
-	} else {
-		[presenter updateSupportedOrientations:@[[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight], [NSNumber numberWithInt:UIInterfaceOrientationPortrait]]];
-	}
-	[presenter dismissViewControllerAnimated:NO completion:nil];
+    } else if([self.calledWith rangeOfString:@"landscape"].location != NSNotFound) {
+        [presenter updateSupportedOrientations:@[[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight]]];
+    } else {
+        [presenter updateSupportedOrientations:@[[NSNumber numberWithInt:UIInterfaceOrientationLandscapeLeft], [NSNumber numberWithInt:UIInterfaceOrientationLandscapeRight], [NSNumber numberWithInt:UIInterfaceOrientationPortrait]]];
+    }
+    [presenter dismissViewControllerAnimated:NO completion:nil];
 }
 
 - (UIInterfaceOrientationMask) supportedInterfaceOrientations
